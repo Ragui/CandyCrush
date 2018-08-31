@@ -21,6 +21,7 @@ import android.widget.Toast;
 
 import java.util.Random;
 import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.abs;
@@ -34,12 +35,13 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
     private int candyType = 6, x = 0, y = 0;
     private Canvas can ;
     private GestureDetector gd;
-    private boolean down = false, move = false, back = true, isY = false;
+    private boolean down = false, move = false, back = true, isY = false, upLeft = false;
     private double x1, x2, y1, y2;
     private String candy_Type = "";
     private int s;
     private TranslateAnimation anim;
     private int inX = 0, inY = 0, outX = 0, outY = 0;
+    int m1 = 0, m2 = 0;
 
 
     public board(Context context) {
@@ -47,7 +49,6 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
         getHolder().addCallback(this);
         setFocusable(true);
         this.setWillNotDraw(false);
-       // invalidate();
     }
 
     public board(Context context, AttributeSet attrs, int defStyle) {
@@ -55,7 +56,6 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
         getHolder().addCallback(this);
         setFocusable(true);
         this.setWillNotDraw(false);
-        //invalidate();
     }
 
     public board(Context context, AttributeSet attrs) {
@@ -63,12 +63,100 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
         getHolder().addCallback(this);
         setFocusable(true);
         this.setWillNotDraw(false);
-       // invalidate();
     }
 
     private void drawCandy(int I, int J, Canvas c){
-        //Toast.makeText (getContext(), "drawCandy", Toast.LENGTH_LONG).show();
-        c.drawBitmap( bitmap[I][J], null, rects[I][J], null);
+        int moveType = candies[I][J].getMove();
+
+        if(moveType == 1){   //move right
+            m1 += x/3;
+
+            rects[I][J].set(x*candies[I][J].getX() + m1, y*(J+2), x*candies[I][J].getX() + m1 + x,y*(J+3) );
+            c.drawBitmap( bitmap[I][J], null, rects[I][J], null);
+            if(m1 == x) {
+               m1 = 0;
+
+               /*if(!candies[I][J].getMoved() && possibleMove()){
+
+               } else */if(candies[I][J].getMoved()){
+                    candies[I][J].setMoved(false);
+                    candies[I][J].setRunning(false);
+                    candies[I][J].changePosition(I, J);
+                    candies[I][J].setMove(0);
+                    rects[I][J].set(I*x , (J+2)*y,(I+1)*x,(J+3)*y);
+                }else{
+                    candies[I][J].setMoved(true);
+                    candies[I][J].setMove(2);
+                    candies[I][J].changePosition(I+1, J);
+                }
+            }
+
+        }
+        else if(moveType == 2){ //move left
+            m2 += x/3;
+            rects[I][J].set(x*candies[I][J].getX() - m2, y*(J+2), x*candies[I][J].getX() - m2 + x,y*(J+3) );
+            c.drawBitmap( bitmap[I][J], null, rects[I][J], null);
+            if(m2 == x) {
+                m2 = 0;
+
+                if(candies[I][J].getMoved()){
+                    candies[I][J].setMoved(false);
+                    candies[I][J].setRunning(false);
+                    candies[I][J].changePosition(I, J);
+                    candies[I][J].setMove(0);
+                    rects[I][J].set(I*x , (J+2)*y,(I+1)*x,(J+3)*y);
+                }else{
+                    candies[I][J].setMoved(true);
+                    candies[I][J].setMove(1);
+                    candies[I][J].changePosition(I-1, J);
+                }
+            }
+        }
+        else if(moveType == 3){ //move up
+            m1 += y/3;
+
+            rects[I][J].set(x*I , y*(candies[I][J].getY()+2) - m1, x*I + x,y*(candies[I][J].getY()+3) - m1);
+            c.drawBitmap( bitmap[I][J], null, rects[I][J], null);
+            if(m1 == y/3 * 3) {
+                m1 = 0;
+
+                if(candies[I][J].getMoved()){
+                    candies[I][J].setMoved(false);
+                    candies[I][J].setRunning(false);
+                    candies[I][J].changePosition(I, J);
+                    candies[I][J].setMove(0);
+                    rects[I][J].set(I*x , (J+2)*y,(I+1)*x,(J+3)*y);
+                }else{
+                    candies[I][J].setMoved(true);
+                    candies[I][J].setMove(4);
+                    candies[I][J].changePosition(I, J-1);
+                }
+            }
+        }
+        else if(moveType == 4){ //move down
+            m2 += y/3;
+
+            rects[I][J].set(x*I , y*(candies[I][J].getY()+2) + m2, x*I + x,y*(candies[I][J].getY()+3) + m2);
+            c.drawBitmap( bitmap[I][J], null, rects[I][J], null);
+            if(m2 == y/3 * 3) {
+                m2 = 0;
+
+                if(candies[I][J].getMoved()){
+                    candies[I][J].setMoved(false);
+                    candies[I][J].setRunning(false);
+                    candies[I][J].changePosition(I, J);
+                    candies[I][J].setMove(0);
+                    rects[I][J].set(I*x , (J+2)*y,(I+1)*x,(J+3)*y);
+                }else{
+                    candies[I][J].setMoved(true);
+                    candies[I][J].setMove(3);
+                    candies[I][J].changePosition(I, J+1);
+                }
+            }
+        }
+        else if(moveType == 0){
+            c.drawBitmap( bitmap[I][J], null, rects[I][J], null);
+        }
     }
 
     @Override
@@ -95,7 +183,7 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
         //allocate candies
         for(int j = 0; j < 9 ; j++){
             for(int i = 0; i < 9; i++){
-                candies[i][j] = new candy(i,j,rand.nextInt(2), bitmap[i][j]);
+                candies[i][j] = new candy(i,j,rand.nextInt(2), bitmap[i][j], this);
                 rects[i][j] = new Rect();
                 rects[i][j].set(i*x , (j+2)*y,(i+1)*x,(j+3)*y);
 
@@ -111,9 +199,7 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format , int width , int height){
-        Canvas c = getHolder().lockCanvas();
-        getHolder().unlockCanvasAndPost(c);
-        invalidate();
+
     }
 
     @Override
@@ -126,6 +212,7 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
         int action = motionEvent.getActionMasked();
 
         if(action == MotionEvent.ACTION_DOWN){
+            this.setWillNotDraw(true);
             down = true;
             x1 = motionEvent.getX();
             y1 = motionEvent.getY();
@@ -135,109 +222,6 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         if(action == MotionEvent.ACTION_MOVE && down){
-            int tempX = (int)(motionEvent.getX());
-            int tempY = (int)(motionEvent.getY());
-
-            if(!move){
-                if(abs(tempX-x1) > abs(tempY-y1)){
-                    isY = false;
-                }
-                else{
-                    isY = true;
-                }
-            }
-
-           if( tempX < (int)x1 && inX != 0 && !isY){ // moving left
-                if(tempX < ((inX-1)*(x) + (x/2)) ){
-
-                    if(possibleMove(inX, inY, tempX/x, tempY/y)){
-
-                    }
-                    else{
-                        rects[inX][inY].set( inX*x , (inY+2)*y,
-                                (inX+1)*x , (inY+3)*y);
-                        rects[inX-1][inY].set( (inX-1)*x , (inY+2)*y,
-                                inX*x , (inY+3)*y);
-                    }
-
-                    back = false;
-                }
-                else{
-                    int z = (inX*x) + x/2 - tempX;
-                    rects[inX][inY].set(tempX - (x/2) , (inY+2)*y,
-                            tempX + (x/2), (inY+3)*y);
-                    rects[inX-1][inY].set( (inX-1)*x + z, (inY+2)*y,
-                            inX*x + z, (inY+3)*y );
-                }
-            }
-            else if(tempX > (int)x1 && inX != 8 && !isY){ //moving right
-                if(tempX > ((inX+1)*(x) + (x/2)) ){
-                    if(possibleMove(inX, inY, tempX/x, tempY/y)){
-
-                    }
-                    else {
-                        rects[inX][inY].set(inX * x, (inY + 2) * y,
-                                (inX + 1) * x, (inY + 3) * y);
-                        rects[inX+1][inY].set( (inX+1)*x , (inY+2)*y,
-                                (inX+2)*x , (inY+3)*y);
-                    }
-                    back = false;
-                }
-                else{
-                    int z = tempX - (inX*x) - x/2;
-                    rects[inX][inY].set(tempX - (x/2) , (inY+2)*y,
-                            (x/2) +  tempX, (inY+3)*y);
-                    rects[inX+1][inY].set( (inX+1)*x - z, (inY+2)*y,
-                            (inX+2)*x - z, (inY+3)*y );
-                }
-            }
-            else if(tempY <  (int)y1 && inY != 0){ // moving up
-                if(tempY < ( (inY+2-1)*(y) + (y/2) )  ){
-                    if(possibleMove(inX, inY, tempX/x, tempY/y)){
-
-                    }
-                    else {
-                        rects[inX][inY].set(inX * x, (inY + 2) * y,
-                                (inX + 1) * x, (inY + 3) * y);
-                        rects[inX][inY-1].set( (inX)*x , (inY+2-1)*y,
-                                (inX+1)*x , (inY+3-1)*y);
-                    }
-                    back = false;
-                }
-                else{
-                    int z = ((inY+2)*y) + y/2 - tempY;
-                    rects[inX][inY].set( inX*x , tempY - (y/2),
-                            (inX+1)*x, tempY + (y/2));
-                    rects[inX][inY-1].set( (inX)*x, (inY+2-1)*y + z,
-                            (inX+1)*x, (inY+3-1)*y +z);
-                }
-            }
-            else if(tempY > (int)y1 && inY != 8){ // moving down
-               if(tempY > ((inY+1+2)*(y) + (y/2)) ){
-
-                   if(possibleMove(inX, inY, tempX/x, tempY/y)){
-
-                   }
-                   else {
-                       rects[inX][inY].set(inX * x, (inY + 2) * y,
-                               (inX + 1) * x, (inY + 3) * y);
-                       rects[inX][inY+1].set( (inX)*x , (inY+2+1)*y,
-                               (inX+1)*x , (inY+3+1)*y);
-                   }
-
-                   back = false;
-               }
-               else{
-                   int z = ((inY+2)*y) + y/2 - tempY;
-                   rects[inX][inY].set( inX*x , tempY - (y/2),
-                           (inX+1)*x, tempY + (y/2));
-                   rects[inX][inY+1].set( (inX)*x, (inY+2+1)*y + z,
-                           (inX+1)*x, (inY+3+1)*y +z);
-
-               }
-           }
-
-            invalidate();
             move = true;
         }
 
@@ -249,45 +233,104 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
             outX = (int)(x2/x);
             outY = (int)(y2/y) - 2;
 
-            if (back){
-                //Toast.makeText(getContext(), "UP", Toast.LENGTH_LONG).show();
-                rects[inX][inY].set( inX*x , (inY+2)*y,
-                        (inX+1)*x , (inY+3)*y);
-                if(isY){
-                    if(inY > 0){
-                        rects[inX][inY-1].set( (inX)*x , (inY+2-1)*y,
-                                (inX+1)*x , (inY+3-1)*y);
-                    }
-                    if(inY < 8){
-                        rects[inX][inY+1].set( (inX)*x , (inY+2+1)*y,
-                                (inX+1)*x , (inY+3+1)*y);
-                    }
-                }
-                else{
-                    if(inX > 0){
-                        rects[inX-1][inY].set( (inX-1)*x , (inY+2)*y,
-                                (inX)*x , (inY+3)*y);
-                    }
-                    if(inX < 8){
-                        rects[inX+1][inY].set( (inX+1)*x , (inY+2)*y,
-                                (inX+2)*x , (inY+3)*y);
-                    }
-                }
+            if(outX >= inX+1){ //righ
+                candies[inX][inY].setMove(1);
+                candies[inX][inY].setRunning(true);
+                candies[inX][inY].start();
 
-                invalidate();
+                candies[inX+1][inY].setMove(2);
+                candies[inX+1][inY].setRunning(true);
+                candies[inX+1][inY].start();
+            }else if(outX <= inX-1){ //left
+                candies[inX][inY].setMove(2);
+                candies[inX][inY].setRunning(true);
+                candies[inX][inY].start();
+
+                candies[inX-1][inY].setMove(1);
+                candies[inX-1][inY].setRunning(true);
+                candies[inX-1][inY].start();
+            }else if(outY >= inY+1){    //down
+                candies[inX][inY].setMove(4);
+                candies[inX][inY].setRunning(true);
+                candies[inX][inY].start();
+
+                candies[inX][inY+1].setMove(3);
+                candies[inX][inY+1].setRunning(true);
+                candies[inX][inY+1].start();
+            }else if(outY <= inY-1){    //up
+                candies[inX][inY].setMove(3);
+                candies[inX][inY].setRunning(true);
+                candies[inX][inY].start();
+
+                candies[inX][inY-1].setMove(4);
+                candies[inX][inY-1].setRunning(true);
+                candies[inX][inY-1].start();
             }
-            back = true;
-            isY = false;
+
         }
 
         return true;
     }
 
-    private boolean possibleMove(int X1, int Y1, int X2, int Y2){
+    private boolean possibleMove(int X1, int Y1, int X2, int Y2) {
         // 1- change/destroy rectangles
         // 2- change/destroy candies
         // returns true if the move is possible, and false otherwise
-        return false;
+
+
+        if(X1 == X2+1){ //left
+
+        }
+        else if(X2 == X1+1){   //right
+
+            if(     (Y1 > 0 && candies[X1][Y1].getType() == candies[X2][Y1-1].getType()) ||
+                    (Y1 <= 7 && candies[X1][Y1].getType() == candies[X2][Y1+1].getType()) ){
+
+                if(Y1 > 1 && candies[X1][Y1].getType() == candies[X2][Y1-1].getType() &&
+                        candies[X1][Y1].getType() == candies[X2][Y1-2].getType()){
+                    rects[X2][Y1-1].setEmpty();
+                    rects[X2][Y1-2].setEmpty();
+                }
+                if(Y1 <= 6 && candies[X1][Y1].getType() == candies[X2][Y1+1].getType() &&
+                        candies[X1][Y1].getType() == candies[X2][Y1+2].getType()){
+                    rects[X2][Y1+1].setEmpty();
+                    rects[X2][Y1+2].setEmpty();
+                }
+                if(candies[X1][Y1].getType() == candies[X2][Y1-1].getType() &&
+                        candies[X1][Y1].getType() == candies[X2][Y1+1].getType()){
+                    rects[X2][Y1+1].setEmpty();
+                    rects[X2][Y1-1].setEmpty();
+                }
+                if(X2 <= 6 && candies[X1][Y1].getType() == candies[X2+1][Y1].getType()
+                        && candies[X1][Y1].getType() == candies[X2+2][Y1].getType()){
+                    rects[X2+1][Y1].setEmpty();
+                    rects[X2+2][Y1].setEmpty();
+                }
+
+            }
+            else if(X2 <= 6 && candies[X1][Y1].getType() == candies[X2+1][Y1].getType()
+                   && candies[X1][Y1].getType() == candies[X2+2][Y1].getType()){
+               swap(X1, Y1, X2, Y2);
+               rects[X2+1][Y1].setEmpty();
+               rects[X2+2][Y1].setEmpty();
+           }
+           else{
+               return false;
+           }
+        }
+        else if(Y1 == Y2+1) { //up
+
+        }
+        else{ //down
+
+        }
+
+        invalidate();
+        return true;
+    }
+
+    private void swap(int X1, int Y1, int X2, int Y2) {
+
     }
 
 }
