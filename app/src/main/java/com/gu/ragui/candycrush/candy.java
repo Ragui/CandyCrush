@@ -17,7 +17,6 @@ public class candy extends Thread{
     private int x, y; // position of the candy in the board
     private int type; // the candy type, from 0 to 5 (6 types)
     private int s;
-    private String candy_Type;
     private int move; //0 -> not moving, 1 -> right, 2 -> left, 3 -> up, 4 -> down
     private boolean running, moved;
 
@@ -28,12 +27,22 @@ public class candy extends Thread{
         type = t;
         move = 0;
 
-        candy_Type = String.format("ic_food%d", t);
        /* s  = getResources().getIdentifier(candy_Type,
                 "mipmap", "com.gu.ragui.candycrush" );
         b = BitmapFactory.decodeResource(getResources(), s);*/
 
        this.b = bView;
+    }
+
+    public candy(candy copy){
+        swapCandy(copy);
+    }
+
+    public void swapCandy(candy copy){
+        x = copy.getX();
+        y = copy.getY();
+        type = copy.getType();
+        move = copy.getMove();
     }
 
     public int getX(){
