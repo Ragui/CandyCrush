@@ -1,13 +1,6 @@
 package com.gu.ragui.candycrush;
 
-import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.util.AttributeSet;
-import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
-import android.widget.Button;
 import android.graphics.Canvas;
 
 
@@ -18,7 +11,7 @@ public class candy extends Thread{
     private int type; // the candy type, from 0 to 5 (6 types)
     private int s;
     private int move; //0 -> not moving, 1 -> right, 2 -> left, 3 -> up, 4 -> down
-    private boolean running, moved;
+    private boolean running, moved, empty;
 
 
     public candy(int i, int j, int t, Bitmap b, board bView) {
@@ -26,12 +19,9 @@ public class candy extends Thread{
         y = j;
         type = t;
         move = 0;
+        empty = false;
 
-       /* s  = getResources().getIdentifier(candy_Type,
-                "mipmap", "com.gu.ragui.candycrush" );
-        b = BitmapFactory.decodeResource(getResources(), s);*/
-
-       this.b = bView;
+        this.b = bView;
     }
 
     public candy(candy copy){
@@ -85,6 +75,14 @@ public class candy extends Thread{
     public void setMove(int m){
         move = m;
     }
+
+/*    public boolean isEmpty(){
+        return empty;
+    }
+
+    public void setEmpty(boolean e){
+        empty = e;
+    }*/
 
     protected void finalize() throws Throwable{
 
