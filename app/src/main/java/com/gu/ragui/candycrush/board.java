@@ -302,16 +302,18 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
 
     private void dropNewCandies(int col, int count, Canvas c){
         //drop "count" candies on the "col"th column
-        for(int i = 0; i < count; i++){
+            int i = 0;
+            if(count != 0){
+                droppedCandies++;
+            }
             rects[col][i].set(col*x , (i+2)*y,(col+1)*x,(i+3)*y);
             candies[col][i].changeType(rand.nextInt(4));
-            candies[col][i].setMove(0);
+            candies[col][i].setMove(4+ ((count == 0) ? -4 : count));
             candy_Type = String.format("ic_can%d", candies[col][i].getType());
             s  = getResources().getIdentifier(candy_Type,
                     "mipmap", "com.gu.ragui.candycrush" );
             bitmap[col][i] = BitmapFactory.decodeResource(getResources(), s);
-            c.drawBitmap( bitmap[col][i], null, rects[col][i], null);
-        }
+
     }
 
     @Override
@@ -331,12 +333,14 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
         }
 
         if(droppedCandies == -1) {
+            droppedCandies = 0;
             for (int i = 0; i < 9; i++) {
                 if (howMany[i] > 0) {
-                    dropNewCandies(i, howMany[i], c);
-                    howMany[i] = 0;
+                    dropNewCandies(i, howMany[i] - 1, c);
+                    howMany[i]--;
                 }
             }
+            gameLoop.setRunning(true);
         }
     }
 
