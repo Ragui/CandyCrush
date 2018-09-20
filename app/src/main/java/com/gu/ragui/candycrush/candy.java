@@ -11,7 +11,8 @@ public class candy extends Thread{
     private int type; // the candy type, from 0 to 5 (6 types)
     private int s;
     private int move; //0 -> not moving, 1 -> right, 2 -> left, 3 -> up, 4 -> down
-    private boolean running, moved, empty;
+    private boolean running, moved;
+    private int moveStep;
 
 
     public candy(int i, int j, int t, Bitmap b, board bView) {
@@ -19,7 +20,9 @@ public class candy extends Thread{
         y = j;
         type = t;
         move = 0;
-        empty = false;
+        moveStep = 0;
+        running = false;
+        moved = false;
 
         this.b = bView;
     }
@@ -33,6 +36,21 @@ public class candy extends Thread{
         y = copy.getY();
         type = copy.getType();
         move = copy.getMove();
+        running = moved = false;
+        moveStep = 0;
+    }
+
+    public int getMoveStep(){
+        return moveStep;
+    }
+
+    public int addMoveStep(int x){
+        moveStep += x;
+        return moveStep;
+    }
+
+    public void resetMoveStep(){
+        moveStep = 0;
     }
 
     public int getX(){

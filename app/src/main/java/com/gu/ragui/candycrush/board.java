@@ -18,6 +18,7 @@ import java.util.Random;
 public class board extends SurfaceView implements SurfaceHolder.Callback {
 
     private candy candies[][] = new candy[9][9];
+    private candy gameLoop;
     private Rect rects[][] = new Rect[9][9];
     private Bitmap bitmap[][] = new Bitmap[9][9];
     private Random rand = new Random();
@@ -30,6 +31,9 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
     private int inX = 0, inY = 0, outX = 0, outY = 0;
     private int m1 = 0, m2 = 0;
     private boolean initial = true;
+    private int droppedCandies = 0;
+    private int howMany[] = new int[9];
+    private boolean update = false;
 
     public board(Context context) {
         super(context);
@@ -91,15 +95,16 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
                    candies[I][J].setMove(0);
                    candies[I + 1][J].setMove(0);
                    candies[I][J].setMoved(false);
-                   candies[I][J].setRunning(false);
-
                    candies[I+1][J].setMoved(false);
-                   candies[I+1][J].setRunning(false);
+
+                   gameLoop.setRunning(false);
+
                    m2 = 0;
+                   update = true;
 
                } else if(candies[I][J].getMoved()){
                     candies[I][J].setMoved(false);
-                    candies[I][J].setRunning(false);
+                    gameLoop.setRunning(false);
                     candies[I][J].changePosition(I, J);
                     candies[I][J].setMove(0);
                     rects[I][J].set(I*x , (J+2)*y,(I+1)*x,(J+3)*y);
@@ -142,14 +147,15 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
                     candies[I][J].setMove(0);
                     candies[I - 1][J].setMove(0);
                     candies[I][J].setMoved(false);
-                    candies[I][J].setRunning(false);
 
                     candies[I-1][J].setMoved(false);
-                    candies[I-1][J].setRunning(false);
+                    gameLoop.setRunning(false);
+
+                    update = true;
 
                 }else if(candies[I][J].getMoved()){
                     candies[I][J].setMoved(false);
-                    candies[I][J].setRunning(false);
+                    gameLoop.setRunning(false);
                     candies[I][J].changePosition(I, J);
                     candies[I][J].setMove(0);
                     rects[I][J].set(I*x , (J+2)*y,(I+1)*x,(J+3)*y);
@@ -171,6 +177,10 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
                     rects[I][J].set(I * x, (J + 2) * y, (I + 1) * x, (J + 3) * y);
                     rects[I][J-1].set((I) * x, (J + 1) * y, (I + 1) * x, (J + 2) * y);
 
+                    if(possibleMove( I, J-1, I, J)){
+                        rects[I][J].setEmpty();
+                    }
+
                     //swap candies
                     candy temp_candy = new candy(candies[I][J]);
                     candies[I][J].swapCandy(candies[I][J-1]);
@@ -191,10 +201,11 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
                     candies[I][J].setMove(0);
                     candies[I][J-1].setMove(0);
                     candies[I][J].setMoved(false);
-                    candies[I][J].setRunning(false);
 
                     candies[I][J-1].setMoved(false);
-                    candies[I][J-1].setRunning(false);
+                    gameLoop.setRunning(false);
+                    m2 = 0;
+                    update = true;
 
                 }else if(candies[I][J].getMoved()){
                     candies[I][J].setMoved(false);
@@ -221,10 +232,6 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
                     rects[I][J].set(I * x, (J + 2) * y, (I + 1) * x, (J + 3) * y);
                     rects[I][J+1].set((I) * x, (J + 3) * y, (I + 1) * x, (J + 4) * y);
 
-                    if(possibleMove( I, J+1, I, J)){
-                        rects[I][J].setEmpty();
-                    }
-
                     //swap candies
                     candy temp_candy = new candy(candies[I][J]);
                     candies[I][J].swapCandy(candies[I][J+1]);
@@ -244,16 +251,15 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
 
                     candies[I][J].setMove(0);
                     candies[I][J].setMoved(false);
-                    candies[I][J].setRunning(false);
 
                     candies[I][J+1].setMove(0);
                     candies[I][J+1].setMoved(false);
-                    candies[I][J+1].setRunning(false);
-                    m1 = 0;
+                    gameLoop.setRunning(false);
+                    update = true;
 
                 }else if(candies[I][J].getMoved()){
                     candies[I][J].setMoved(false);
-                    candies[I][J].setRunning(false);
+                    gameLoop.setRunning(false);
                     candies[I][J].changePosition(I, J);
                     candies[I][J].setMove(0);
                     rects[I][J].set(I*x , (J+2)*y,(I+1)*x,(J+3)*y);
@@ -267,6 +273,45 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
         else if(moveType == 0){
             c.drawBitmap( bitmap[I][J], null, rects[I][J], null);
         }
+        else if(moveType > 4){ //drop candy
+          int z = candies[I][J].addMoveStep(y/3);
+
+            rects[I][J].set(x*I , y*(candies[I][J].getY()+2) + z, x*I + x,y*(candies[I][J].getY()+3) + z);
+            c.drawBitmap( bitmap[I][J], null, rects[I][J], null);
+            if(z == (y/3 * 3 * (moveType - 4)) ) {
+                droppedCandies--;
+                if(droppedCandies == 0){
+                    gameLoop.setRunning(false);
+                    droppedCandies = -1;
+                }
+                candies[I][J].resetMoveStep();
+
+                //swap candies
+                candies[I][J+(moveType-4)].swapCandy(candies[I][J]);
+                candies[I][J+(moveType-4)].changePosition(I,J+(moveType-4));
+                bitmap[I][J+(moveType-4)] = Bitmap.createBitmap(bitmap[I][J]);
+                candies[I][J].setMove(0);
+
+                candies[I][J+(moveType-4)].setMove(0);
+                rects[I][J+(moveType-4)].set(x*I, (J+(moveType-4)+2 ) * y, (I+1)*x, (J+(moveType-4)+3 ) * y);
+                c.drawBitmap(bitmap[I][J+(moveType-4)], null, rects[I][J+(moveType-4)], null);
+            }
+        }
+
+    }
+
+    private void dropNewCandies(int col, int count, Canvas c){
+        //drop "count" candies on the "col"th column
+        for(int i = 0; i < count; i++){
+            rects[col][i].set(col*x , (i+2)*y,(col+1)*x,(i+3)*y);
+            candies[col][i].changeType(rand.nextInt(4));
+            candies[col][i].setMove(0);
+            candy_Type = String.format("ic_can%d", candies[col][i].getType());
+            s  = getResources().getIdentifier(candy_Type,
+                    "mipmap", "com.gu.ragui.candycrush" );
+            bitmap[col][i] = BitmapFactory.decodeResource(getResources(), s);
+            c.drawBitmap( bitmap[col][i], null, rects[col][i], null);
+        }
     }
 
     @Override
@@ -274,9 +319,23 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
         super.onDraw(c);
         c.drawColor(Color.GRAY);
 
-        for(int j = 0; j < 9 ; j++){
-            for(int i = 0; i < 9; i++){
+        for(int i = 0; i < 9 ; i++){
+            for(int j = 8; j >= 0; j--){
                 drawCandy(i, j, c);
+            }
+        }
+
+        if(update){
+            updateBoard();
+            update = false;
+        }
+
+        if(droppedCandies == -1) {
+            for (int i = 0; i < 9; i++) {
+                if (howMany[i] > 0) {
+                    dropNewCandies(i, howMany[i], c);
+                    howMany[i] = 0;
+                }
             }
         }
     }
@@ -302,6 +361,7 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
+        gameLoop = new candy(0,0,0, bitmap[0][0], this);
         getHolder().unlockCanvasAndPost(c);
     }
 
@@ -342,42 +402,26 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
 
             if(outX >= inX+1 && inX < 8){ //righ
                 candies[inX][inY].setMove(1);
-                candies[inX][inY].setRunning(true);
-                candies[inX][inY].start();
-
                 candies[inX+1][inY].setMove(2);
-                candies[inX+1][inY].setRunning(true);
-                candies[inX+1][inY].start();
             }else if(outX <= inX-1 && inX > 0){ //left
                 candies[inX][inY].setMove(2);
-                candies[inX][inY].setRunning(true);
-                candies[inX][inY].start();
-
                 candies[inX-1][inY].setMove(1);
-                candies[inX-1][inY].setRunning(true);
-                candies[inX-1][inY].start();
             }else if(outY >= inY+1 && inY < 8){    //down
                 candies[inX][inY].setMove(4);
-                candies[inX][inY].setRunning(true);
-                candies[inX][inY].start();
-
                 candies[inX][inY+1].setMove(3);
-                candies[inX][inY+1].setRunning(true);
-                candies[inX][inY+1].start();
             }else if(outY <= inY-1 && inY > 0){    //up
                 candies[inX][inY].setMove(3);
-                candies[inX][inY].setRunning(true);
-                candies[inX][inY].start();
-
                 candies[inX][inY-1].setMove(4);
-                candies[inX][inY-1].setRunning(true);
-                candies[inX][inY-1].start();
             }
             if(initial){
                 this.setWillNotDraw(true);
                 initial = false;
             }
 
+            gameLoop.setRunning(true);
+            if( !(gameLoop.isAlive())) {
+                gameLoop.start();
+            }
         }
 
         return true;
@@ -396,6 +440,10 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
 
                 if(Y1 > 1 && candies[X1][Y1].getType() == candies[X2][Y1-1].getType() &&
                         candies[X1][Y1].getType() == candies[X2][Y1-2].getType()){
+
+                   // candies[X2][Y1-1].setMove(-1);
+                   // candies[X2][Y1-2].setMove(-1);
+
                     rects[X2][Y1-1].setEmpty();
                     rects[X2][Y1-2].setEmpty();
                     yes = true;
@@ -567,30 +615,35 @@ public class board extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void updateBoard(){
+        int count = 0, start = 0;
+        droppedCandies = 0;
         for(int i = 0; i < 9; i++){
-            for(int j = 8; j >= 0; j--){
+            for(int j = 0; j < 9; j++){
                 if(rects[i][j].isEmpty()){
-                    dropCandyAt(i,j);
-                    break;
+                    if(count == 0){
+                        start = j;
+                    }
+                    count++;
                 }
             }
+            if(count != 0){
+                dropCandyAt(count, start, i);
+            }
+            howMany[i] = count;
+            count = start = 0;
+
+        }
+        if(droppedCandies > 0){
+            gameLoop.setRunning(true);
         }
     }
 
-    private void dropCandyAt(int i, int j) {
-        if(j > 0){  //drop the above candy
-            if(!rects[i][j-1].isEmpty()){
-                candies[i][j].changeType(candies[i][j-1].getType());
-                bitmap[i][j] = Bitmap.createBitmap(bitmap[i][j-1]);
-                rects[i][j].set(i*x, (j+2)*y, (i+1)*x, (j+3)*3);
-                dropCandyAt(i, j-1);
-            }else{
-                dropCandyAt(i, j-1);
-                dropCandyAt(i,j);
+    private void dropCandyAt(int count, int start, int i) {
+        if(start > 0) {
+            for (int j = start - 1; j >= 0; j--) {
+                candies[i][j].setMove(4 + count);
+                droppedCandies++;
             }
-        }else{
-            //random candy
-
         }
     }
 }
